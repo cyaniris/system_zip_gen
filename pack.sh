@@ -1,16 +1,17 @@
 #!/bin/bash
 
-#1M = 1024k/4k = 256 blocks
-#dumpe2fs for orig number of blocks
+if [ "$(id -u)" != "0" ]; then
+  echo 'This script must be run as root'
+  exit 1
+fi
 
-#./bin/make_ext4fs -s -l 2100M -a system system-nonbloat.img system
-#
-#./bin/sgs4ext4fs --bloat system-nonbloat.img system.img
-#
-#rm system-nonbloat.img
+if [ ! -d system -o ! -d META-INF ]; then
+  echo 'Oops wrong dir or something is missing!'
+  exit 1
+fi
 
 cd system
-../_updater_gen.sh > ../META-INF/com/google/android/updater-script
+../bin/gen.sh > ../META-INF/com/google/android/updater-script
 cd ..
 
 7z a _system.zip META-INF system
