@@ -22,7 +22,7 @@ echo -e "\nSigning zip..."
 if [ -f _system-signed.zip ]; then
   rm _system.zip
   mv _system-signed.zip _system.zip
-  chown yuanjie:yuanjie _system.zip
+  chown 1000:1000 _system.zip
   echo -e "\nZip is ready!!\n"
 fi
 
