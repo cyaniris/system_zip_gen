@@ -4,3 +4,4 @@ mod/*
 csc/*
 removed/*
 *.zip
+META-INF/com/google/android/updater-script

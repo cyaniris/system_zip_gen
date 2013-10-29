@@ -10,20 +10,38 @@ if [ ! -d system -o ! -d META-INF ]; then
   exit 1
 fi
 
-cd system
-../bin/gen.sh > ../META-INF/com/google/android/updater-script
-cd ..
+echo -n -e '\nCreate?(N/y): '
+read a
+if [ "a$a" == 'ay' -o "a$a" == 'aY' ]; then
+  cd system
+  ../bin/gen.sh > ../META-INF/com/google/android/updater-script
+  cd ..
 
-7z a _system.zip META-INF system
-
-echo -e "\nSigning zip..."
-./bin/signzip.sh _system.zip
-
-if [ -f _system-signed.zip ]; then
-  rm _system.zip
-  mv _system-signed.zip _system.zip
-  chown 1000:1000 _system.zip
-  echo -e "\nZip is ready!!\n"
+  rm -f _t.zip
+  find system   -type f -prune | zip -0 -u _t.zip -@
+  find META-INF -type f -prune | zip -0    _t.zip -@
 fi
 
+if [ -f _t.zip ]; then
+  echo -n -e "\nSign?(N/y): "
+  read a
+  if [ "a$a" == 'ay' -o "a$a" == 'aY' ]; then
+
+    ID=$(grep ro.build.display.id  system/build.prop | sed 's/ //g')
+    ID=${ID##*.}
+    
+    test -f "system-${ID}.zip" && rm "system-${ID}.zip"
+
+    echo -e "\nSigning zip..."
+    java -jar bin/signapk.jar bin/testkey.x509.pem bin/testkey.pk8 _t.zip "system-${ID}.zip"
+
+    if [ -f "system-${ID}.zip" ]; then
+      chmod 666 "system-${ID}.zip"
+      echo -e "\nZip is ready!!"
+    fi
+
+  fi
+fi
+
+echo
 

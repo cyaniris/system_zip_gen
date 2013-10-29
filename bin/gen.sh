@@ -1,69 +1,49 @@
 #!/bin/bash
 
-echo 'ui_print("");
-ui_print("");
-ui_print(" ###################### ");
-ui_print("     GT-I9502ZNUCMH2    ");
-ui_print("   with ROOT and GAPPS  ");
-ui_print("       by Cyaniris      ");
-ui_print(" ###################### ");
-ui_print("");
-ui_print("");
-show_progress(1.000000, 0);'
+idinc=$(grep ro.build.display.id  build.prop)
+idinc=${idinc##*.}
+
+echo "ui_print(\"\");
+ui_print(\"\");
+ui_print(\"************************\");
+ui_print(\"     GT-${idinc}    \");
+ui_print(\"   with ROOT and GAPPS  \");
+ui_print(\"       by Cyaniris      \");
+ui_print(\"************************\");
+ui_print(\"\");
+ui_print(\"\");
+show_progress(1.0, 0);"
 echo
 
-echo 'ui_print("--------------------");
-ui_print(" Clean up /preload...");
-ui_print("--------------------");
-mount("ext4", "EMMC", "/dev/block/mmcblk0p16", "/preload");
-delete_recursive("/preload");'
-echo 'set_progress(0.100000);'
-echo
-
-echo 'ui_print("--------------------");
-ui_print(" Wipe Cache...");
-ui_print("--------------------");
-mount("ext4", "EMMC", "/dev/block/mmcblk0p19", "/cache");
-delete_recursive("/cache");'
-echo 'set_progress(0.200000);'
-echo
-
-echo 'ui_print("--------------------");
-ui_print(" Wipe Dalvik Cache...");
-ui_print("--------------------");
-mount("ext4", "EMMC", "/dev/block/mmcblk0p21", "/data");
-delete_recursive("/data/dalvik-cache");'
-echo 'set_progress(0.300000);'
-echo
-
-echo 'ui_print("--------------------");
-ui_print(" Format /system...");
-ui_print("--------------------");
-format("ext4", "EMMC", "/dev/block/mmcblk0p20", "0");
+echo 'ui_print("------------------------");
+ui_print(" Formating /system...   ");
+format("ext4", "EMMC", "/dev/block/mmcblk0p20", "0", "/system");
 mount("ext4", "EMMC", "/dev/block/mmcblk0p20", "/system");
 delete_recursive("/system");'
-echo 'set_progress(0.400000);'
+echo 'set_progress(0.1);'
 echo
 
-echo 'ui_print("--------------------");
-ui_print("Copying System...");
+echo 'ui_print("------------------------");
+ui_print(" Copying System...      ");
 package_extract_dir("system", "/system");'
-echo 'set_progress(0.700000);'
+echo 'set_progress(0.5);'
 echo
 
-echo 'ui_print("--------------------");
-ui_print(" Make Links...");
-ui_print("--------------------");'
-find . -type l -exec ls -l {} \; | cut -d' ' -f10,12 | sort | while read a b
+echo 'ui_print("------------------------");
+ui_print(" Making Symbol Links... ");'
+find . -type l -exec sh -c 'echo `readlink {}` {}' \; | sort | while read b a
 do
   echo "symlink(\"$b\", \"/system${a#.}\");"
 done
-echo 'set_progress(0.800000);'
+echo 'set_progress(0.6);'
 echo
 
-echo 'ui_print("--------------------");
-ui_print(" Set Permissions...");
-ui_print("--------------------");'
+# We don't need to care about ownership
+# because only two files have non-root
+# owner, while both have special permission
+
+echo 'ui_print("------------------------");
+ui_print(" Setting Permissions... ");'
 find . -type f ! -perm 644 | sort | while read FILE
 do
   U=$( stat -c "%u" $FILE )
@@ -71,25 +51,42 @@ do
   A=$( stat -c "%a" $FILE )
   echo "set_perm($U, $G, 0$A, \"/system${FILE#.}\");"
 done
-echo 'set_progress(0.900000);'
+echo 'set_progress(0.7);'
+echo
+
+echo 'ui_print("------------------------");
+ui_print(" Cleaning up /preload...");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p16", "/preload");
+delete_recursive("/preload");'
+echo 'set_progress(0.8);'
+echo
+
+echo 'ui_print("------------------------");
+ui_print(" Wiping Cache...        ");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p19", "/cache");
+delete_recursive("/cache");'
+echo 'set_progress(0.9);'
+echo
+
+echo 'ui_print("------------------------");
+ui_print(" Wiping Dalvik Cache... ");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p21", "/data");
+delete_recursive("/data/dalvik-cache");'
+echo 'set_progress(1.0);'
 echo
 
 echo 'unmount("/cache");
 unmount("/data");
 unmount("/preload");
 unmount("/system");
-set_progress(1.000000);
-ui_print("Done, your system is MINE!!!");'
+ui_print("------------------------");
+ui_print("");
+ui_print("");
+ui_print("************************");
+ui_print("    Done, your system   ");
+ui_print("       is MINE!!!!      ");
+ui_print("************************");
+ui_print("");
+ui_print("");'
 echo
-
-echo 'ui_print("");
-ui_print("");
-ui_print(" ###################### ");
-ui_print("     GT-I9502ZNUCMH2    ");
-ui_print("   with ROOT and GAPPS  ");
-ui_print("       by Cyaniris      ");
-ui_print(" ###################### ");
-ui_print("");
-ui_print("");
-show_progress(1.000000, 0);'
 
